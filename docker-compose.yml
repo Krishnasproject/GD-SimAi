@@ -1,0 +1,49 @@
+# =============================================================================
+# docker-compose.yml
+# Spins up two services locally:
+#   1. backend  — FastAPI app (auto-reloads on file changes)
+#   2. chromadb — local vector store for GD topics + transcripts (RAG)
+#
+# Run: docker-compose up --build
+# Stop: docker-compose down
+# =============================================================================
+
+version: "3.9"
+
+services:
+  # ── 1. FastAPI Backend ──────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile          # we'll add this in Week 2
+    container_name: gd_sim_backend
+    ports:
+      - "8000:8000"                   # http://localhost:8000
+    volumes:
+      - ./backend:/app                # live-reload: code changes reflect instantly
+      - ./backend/chroma_data:/app/chroma_data
+    env_file:
+      - ./backend/.env                # Gemini key, Firebase credentials, etc.
+    environment:
+      - PYTHONUNBUFFERED=1            # print() shows up immediately in logs
+    command: >
+      uvicorn app.main:app
+        --host 0.0.0.0
+        --port 8000
+        --reload                      # auto-restart on any .py change
+
+  # ── 2. ChromaDB Vector Store ────────────────────────────────────────────────
+  # Stores GD topic embeddings + ingested YouTube transcript chunks.
+  # The backend queries this for RAG context before each GD session.
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: gd_sim_chroma
+    ports:
+      - "8001:8000"                   # http://localhost:8001
+    volumes:
+      - ./backend/chroma_data:/chroma/chroma  # persists data between restarts
+
+# ── Shared network so services talk to each other by name ─────────────────────
+networks:
+  default:
+    name: gd_sim_network

@@ -1,0 +1,45 @@
+# =============================================================================
+# backend/requirements.txt
+#
+# Install all dependencies:
+#   cd backend
+#   pip install -r requirements.txt
+#
+# Each package's role is documented below.
+# =============================================================================
+
+# ── Web Framework ─────────────────────────────────────────────────────────────
+fastapi==0.115.0          # The API framework — handles routing, validation, docs
+uvicorn[standard]==0.30.6 # ASGI server that runs FastAPI (like gunicorn for async)
+websockets==13.0          # WebSocket support for real-time GD communication
+
+# ── Config & Validation ────────────────────────────────────────────────────────
+pydantic==2.8.2           # Data validation — powers FastAPI's request/response models
+pydantic-settings==2.4.0  # Reads .env file into Settings class (config.py)
+python-dotenv==1.0.1      # Loads .env into os.environ at startup
+
+# ── Firebase Admin SDK ─────────────────────────────────────────────────────────
+firebase-admin==6.5.0     # Firestore client + Auth token verification
+
+# ── AI: Gemini Flash ──────────────────────────────────────────────────────────
+google-generativeai==0.8.3  # Official Gemini Python SDK (streaming support)
+
+# ── Vector Store: ChromaDB ────────────────────────────────────────────────────
+# chromadb==0.5.20          # Local persistent vector DB for RAG topic retrieval (REQUIRES C++ BUILD TOOLS ON WINDOWS)
+
+# ── LangGraph (Week 2) ────────────────────────────────────────────────────────
+langgraph==0.2.28         # State machine for the GD orchestration graph
+langchain-core==0.3.15    # LangGraph dependency
+
+# ── HTTP Client (for Groq STT + external APIs) ────────────────────────────────
+httpx==0.27.2             # Async HTTP client — used in GroqWhisperSTT
+
+# ── YouTube Ingestion Script (Week 4) ─────────────────────────────────────────
+yt-dlp==2024.10.22        # Download YT audio for transcript ingestion
+# pyannote.audio          # Speaker diarization — install separately (large model)
+#   pip install pyannote.audio  (requires HuggingFace token)
+
+# ── Testing ────────────────────────────────────────────────────────────────────
+pytest==8.3.3
+pytest-asyncio==0.24.0    # Async test support (for async FastAPI routes)
+edge-tts                  # Microsoft Edge TTS for human-sounding voices

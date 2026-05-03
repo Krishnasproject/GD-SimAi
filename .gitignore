@@ -1,0 +1,34 @@
+# ── Python ──────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+
+# ── Environment / Secrets ────────────────────────────────
+.env
+*.env
+!.env.example          # keep the template, ignore real values
+
+# ── ChromaDB local vector store ──────────────────────────
+backend/chroma_data/
+
+# ── Node / Frontend ──────────────────────────────────────
+node_modules/
+frontend/dist/
+frontend/.vite/
+*.local
+
+# ── Firebase service account keys ────────────────────────
+*serviceAccountKey*.json
+
+# ── OS / Editor ──────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
