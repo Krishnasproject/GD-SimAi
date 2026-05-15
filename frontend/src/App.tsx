@@ -18,12 +18,15 @@ function Navbar() {
 
   return (
     <nav className="navbar">
-      <Link to={user ? '/dashboard' : '/'} className="navbar-brand">
+      <Link to={user ? '/dashboard' : '/'} className="navbar-brand" style={{ textDecoration: 'none' }}>
         Mock<span>Talk</span>
       </Link>
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         {user ? (
           <>
+            <Link to="/dashboard" className="btn-ghost" style={{ fontSize: '13px', padding: '8px 16px', textDecoration: 'none' }}>
+              Dashboard
+            </Link>
             <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
               {user.email}
             </span>
@@ -37,7 +40,7 @@ function Navbar() {
           </>
         ) : (
           <>
-            <Link to="/login" style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
+            <Link to="/login" style={{ fontSize: '14px', color: 'var(--text-secondary)', textDecoration: 'none' }}>
               Sign In
             </Link>
             <Link to="/signup" className="btn-primary" style={{ padding: '8px 20px', fontSize: '14px' }}>
@@ -51,8 +54,16 @@ function Navbar() {
 }
 
 function AppLayout() {
+  const location = useLocation();
+  const isRoom = location.pathname.startsWith('/room/');
   return (
     <>
+      {!isRoom && (
+        <>
+          <div className="orb orb-1" />
+          <div className="orb orb-2" />
+        </>
+      )}
       <Navbar />
       <main>
         <Routes>

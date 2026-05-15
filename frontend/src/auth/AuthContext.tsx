@@ -7,7 +7,8 @@ import {
   signOut,
   type User,
 } from 'firebase/auth';
-import { auth, isFirebaseConfigured } from '../services/firebase';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { auth, db, isFirebaseConfigured } from '../services/firebase';
 
 type AuthContextValue = {
   user: User | null;
@@ -38,10 +39,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading,
       isConfigured: isFirebaseConfigured,
       login: async (email: string, password: string) => {
-        await signInWithEmailAndPassword(auth, email, password);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        // Update last login timestamp
+        await setDoc(
+          doc(db, 'users', userCredential.user.uid),
+          { lastLoginAt: serverTimestamp() },
+          { merge: true },
+        );
       },
       signup: async (email: string, password: string) => {
-        await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        // Create full user profile document in Firestore
+        await setDoc(doc(db, 'users', userCredential.user.uid), {
+          uid: userCredential.user.uid,
+          email: userCredential.user.email,
+          displayName: email.split('@')[0], // default name from email prefix
+          createdAt: serverTimestamp(),
+          lastLoginAt: serverTimestamp(),
+          sessionsCount: 0,
+          plan: 'free',
+        });
       },
       logout: async () => {
         await signOut(auth);

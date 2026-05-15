@@ -40,14 +40,6 @@ async def lifespan(app: FastAPI):
     logger.info("🛑 Shutting down.")
 
 
-def _build_allowed_origins(frontend_url: str) -> list[str]:
-    origins = {frontend_url}
-    if "localhost" in frontend_url:
-        origins.add(frontend_url.replace("localhost", "127.0.0.1"))
-    if "127.0.0.1" in frontend_url:
-        origins.add(frontend_url.replace("127.0.0.1", "localhost"))
-    return sorted(origins)
-
 
 # ── 1. Create FastAPI App ─────────────────────────────────────────────────────
 app = FastAPI(
@@ -65,7 +57,7 @@ app = FastAPI(
 # Without this, the browser blocks requests from localhost:5173 → localhost:8000.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_build_allowed_origins(settings.FRONTEND_URL),
+    allow_origins=settings.get_allowed_origins(),
     allow_credentials=True,                  # Allow cookies / auth headers
     allow_methods=["*"],                     # GET, POST, PUT, DELETE, etc.
     allow_headers=["*"],                     # Authorization, Content-Type, etc.

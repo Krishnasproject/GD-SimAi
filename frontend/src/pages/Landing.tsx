@@ -1,22 +1,15 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { BrainCircuit, Zap, Activity, Users, Mic2, BarChart } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/useAuth';
 import { apiUrl } from '../config/api';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 
-const METRICS = [
-  { label: 'Max Session Turns', value: '40' },
-  { label: 'Latency VAD/STT', value: '< 1s' },
-  { label: 'Dynamic Personas', value: '3' },
-];
-
 const COMPANIES = [
-  { id: 'TCS', name: 'TCS Ninja/Digital', span: 'col-span-12 sm:col-span-8', icon: BrainCircuit },
-  { id: 'Infosys', name: 'Infosys SP', span: 'col-span-12 sm:col-span-4', icon: Zap },
-  { id: 'Deloitte', name: 'Deloitte USI', span: 'col-span-12 sm:col-span-6', icon: Activity },
-  { id: 'Accenture', name: 'Accenture', span: 'col-span-12 sm:col-span-6', icon: Users },
-  { id: 'General', name: 'General Pool', span: 'col-span-12', icon: BarChart },
+  { id: 'TCS', name: 'TCS Ninja/Digital' },
+  { id: 'Infosys', name: 'Infosys SP' },
+  { id: 'Deloitte', name: 'Deloitte USI' },
+  { id: 'Accenture', name: 'Accenture' },
+  { id: 'General', name: 'General Pool' },
 ];
 
 export default function Landing() {
@@ -25,7 +18,7 @@ export default function Landing() {
   const [isInitializing, setIsInitializing] = useState(false);
   const [startError, setStartError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   const handleStart = async () => {
     if (!user) {
@@ -76,107 +69,240 @@ export default function Landing() {
 
   return (
     <>
-      <nav className="navbar">
-        <div className="navbar-brand">Mock<span>Talk</span></div>
-        <div className="flex items-center gap-4">
-          {user ? (
-            <>
-              <Link to="/dashboard" className="btn-ghost" style={{ fontSize: '13px', padding: '6px 14px' }}>Dashboard</Link>
-              <button 
-                onClick={() => logout()} 
-                className="btn-ghost" 
-                style={{ fontSize: '13px', padding: '6px 14px', borderColor: 'var(--accent-rose-dim)', color: 'var(--accent-rose)' }}
-              >
-                Logout
-              </button>
-            </>
-          ) : (
-            <Link to="/login" className="btn-primary" style={{ padding: '8px 16px', fontSize: '13px' }}>Sign In</Link>
-          )}
-        </div>
-      </nav>
-
-      <div className="max-w-[1400px] mx-auto px-6 sm:px-10 mt-12 sm:mt-24 grid grid-cols-1 lg:grid-cols-12 gap-20 items-start relative z-10 w-full min-h-[calc(100vh-100px)]">
-
-        {/* Left Col: Hero */}
-        <div className="lg:col-span-7 space-y-12">
-          <div className="space-y-6 reveal">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[var(--accent-teal-dim)] bg-[var(--accent-teal-dim)] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--accent-teal)]">
-              <Mic2 className="w-3.5 h-3.5" />
-              <span>MockTalk Engine v1.0</span>
+      {/* ── HERO SECTION ── */}
+      <section style={{
+        minHeight: '92vh', display: 'flex', alignItems: 'center',
+        maxWidth: '1200px', margin: '0 auto', padding: '80px 48px',
+        position: 'relative', zIndex: 1,
+      }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '80px', alignItems: 'center', width: '100%' }}>
+          
+          {/* Left: Copy */}
+          <div>
+            {/* Eyebrow badge */}
+            <div className="badge badge-ember" style={{ marginBottom: '28px' }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--ember)', display: 'inline-block' }} />
+              Now in Beta · Free for students
             </div>
 
-            <h1 className="text-[clamp(2.8rem,6vw,5rem)] font-['Syne'] font-[800] tracking-tight leading-[1.05] text-white">
-              Practice GDs Like<br />You're Already in<br />the Room.
+            <h1 style={{
+              fontFamily: 'var(--font-display)', fontWeight: 800,
+              fontSize: 'clamp(2.6rem, 4.5vw, 3.8rem)',
+              lineHeight: 1.08, letterSpacing: '-0.03em',
+              color: 'var(--text-primary)', marginBottom: '24px',
+            }}>
+              The smartest way to<br />
+              <span style={{ color: 'var(--ember)' }}>crack your GD round.</span>
             </h1>
 
-            <div className="pl-5 border-l-2 border-[var(--accent-gold)]">
-              <p className="text-[var(--text-secondary)] text-[18px] max-w-xl leading-relaxed font-['DM_Sans']">
-                Three AI personas. Real-time voice. Placement-grade pressure.
-              </p>
+            <p style={{
+              fontSize: '17px', color: 'var(--text-secondary)',
+              lineHeight: 1.75, maxWidth: '480px', marginBottom: '40px',
+              fontWeight: 400,
+            }}>
+              Practice live group discussions with AI personas that challenge, 
+              interrupt, and evaluate you — exactly like real placement rounds 
+              at TCS, Infosys, Deloitte and more.
+            </p>
+
+            {/* CTA row */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '48px' }}>
+              <button onClick={handleStart} disabled={isInitializing} className="btn-primary"
+                style={{ padding: '14px 32px', fontSize: '15px' }}>
+                {isInitializing ? 'Starting...' : 'Start Free Session →'}
+              </button>
+              <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                No signup needed to try
+              </span>
+            </div>
+
+            {/* Stats strip */}
+            <div style={{
+              display: 'flex', gap: '32px',
+              paddingTop: '32px', borderTop: '1px solid var(--border)',
+            }}>
+              {[
+                { value: '3', label: 'AI Personas' },
+                { value: '<1s', label: 'Response Time' },
+                { value: '50+', label: 'GD Topics' },
+                { value: '100%', label: 'Free' },
+              ].map(stat => (
+                <div key={stat.label}>
+                  <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '22px', color: 'var(--text-primary)' }}>
+                    {stat.value}
+                  </div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                    {stat.label}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
-          <div className="space-y-4 reveal reveal-delay-1">
+          {/* Right: Environment selector */}
+          <div>
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--ember)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '6px' }}>
+                Training Environment
+              </div>
+              <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
+                Select your target company to get relevant GD topics
+              </p>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              {COMPANIES.map(company => {
+                const isSelected = selectedCompany === company.id;
+                return (
+                  <button
+                    key={company.id}
+                    onClick={() => setSelectedCompany(company.id)}
+                    style={{
+                      gridColumn: company.id === 'General' ? '1 / -1' : undefined,
+                      padding: '16px 20px', borderRadius: 'var(--r-md)',
+                      background: isSelected ? 'rgba(232,108,58,0.08)' : 'var(--bg-card)',
+                      border: isSelected ? '1px solid var(--ember-border)' : '1px solid var(--border)',
+                      cursor: 'pointer', textAlign: 'left',
+                      transition: 'all 0.2s',
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    }}
+                  >
+                    <span style={{
+                      fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: '14px',
+                      color: isSelected ? 'var(--text-primary)' : 'var(--text-secondary)',
+                    }}>
+                      {company.name}
+                    </span>
+                    {isSelected && (
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--ember)' }} />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
             {startError && (
-              <div className="rounded-[var(--radius-sm)] border border-[var(--accent-rose-dim)] bg-[var(--accent-rose-dim)] px-4 py-3 text-[var(--accent-rose)] text-[13px] font-medium">
+              <div style={{ marginTop: '16px', padding: '12px 16px', background: 'var(--rose-dim)', border: '1px solid rgba(248,113,113,0.3)', borderRadius: 'var(--r-md)', fontSize: '13px', color: 'var(--rose)' }}>
                 {startError}
               </div>
             )}
-            <button
-              onClick={handleStart}
-              disabled={isInitializing}
-              className="btn-primary px-8 py-4 sm:w-auto w-full text-[16px] font-['Syne'] font-bold shadow-[0_8px_32px_var(--accent-teal-dim)] hover:shadow-[0_12px_40px_rgba(30,155,138,0.4)] transition-all bg-[var(--accent-teal)]"
-            >
-              {isInitializing ? 'Initializing Pipeline...' : 'Begin Session →'}
-            </button>
           </div>
+        </div>
+      </section>
 
-          <div className="pt-8 border-t border-[var(--border)] grid grid-cols-3 gap-6 reveal reveal-delay-2">
-            {METRICS.map((metric, idx) => (
-              <div key={idx} className="flex flex-col gap-1">
-                <div className="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider">{metric.label}</div>
-                <div className="text-2xl font-['Syne'] font-bold text-white tabular-nums tracking-tight">{metric.value}</div>
+      {/* ── HOW IT WORKS ── */}
+      <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '80px 48px', position: 'relative', zIndex: 1 }}>
+        <div style={{ textAlign: 'center', marginBottom: '56px' }}>
+          <div className="badge badge-neutral" style={{ marginBottom: '16px' }}>How it works</div>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 'clamp(1.8rem, 3vw, 2.6rem)', letterSpacing: '-0.02em' }}>
+            Three steps to GD mastery
+          </h2>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' }}>
+          {[
+            { step: '01', title: 'Pick your arena', desc: 'Choose your target company. We load relevant topics and calibrate AI difficulty to match their actual GD style.' },
+            { step: '02', title: 'Discuss in real-time', desc: 'Speak naturally. Three AI personas — an Aggressor, a Logical thinker, and a Diplomat — respond instantly with voice.' },
+            { step: '03', title: 'Get brutally honest feedback', desc: 'After every session, receive a performance report covering logic, diplomacy, airtime, and actionable next steps.' },
+          ].map(item => (
+            <div key={item.step} className="card reveal" style={{ position: 'relative', overflow: 'hidden' }}>
+              <div style={{
+                fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '48px',
+                color: 'var(--border-light)', lineHeight: 1, marginBottom: '20px',
+                letterSpacing: '-0.04em',
+              }}>
+                {item.step}
               </div>
-            ))}
-          </div>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '17px', marginBottom: '12px' }}>
+                {item.title}
+              </h3>
+              <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+                {item.desc}
+              </p>
+            </div>
+          ))}
         </div>
+      </section>
 
-        {/* Right Col: Targets */}
-        <div className="lg:col-span-5 w-full reveal reveal-delay-1">
-          <div className="mb-6 flex items-center justify-between">
-            <h3 className="text-[11px] font-bold tracking-widest text-[var(--accent-gold)] uppercase">Training Environment</h3>
-          </div>
-
-          <div className="grid grid-cols-12 gap-4">
-            {COMPANIES.map((company) => {
-              const isSelected = selectedCompany === company.id;
-
-              return (
-                <button
-                  key={company.id}
-                  onClick={() => setSelectedCompany(company.id)}
-                  className={`
-                    text-left p-6 rounded-[var(--radius-md)] transition-all duration-200
-                    ${company.span} 
-                    ${isSelected
-                      ? 'bg-[var(--bg-hover)] border-l-2 border-l-[var(--accent-gold)] shadow-xl relative'
-                      : 'bg-[var(--bg-card)] border border-[var(--border)] hover:border-[#3A3A4A]'}
-                  `}
-                >
-                  {isSelected && <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-[var(--accent-gold)]"></div>}
-                  <div className="flex flex-col h-full gap-4">
-                    <h4 className={`font-['Syne'] font-medium text-lg leading-tight tracking-tight ${isSelected ? 'text-white' : 'text-[var(--text-primary)]'}`}>
-                      {company.name}
-                    </h4>
+      {/* ── PERSONAS SECTION ── */}
+      <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '80px 48px', position: 'relative', zIndex: 1 }}>
+        <div style={{ textAlign: 'center', marginBottom: '56px' }}>
+          <div className="badge badge-neutral" style={{ marginBottom: '16px' }}>Meet the panel</div>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 'clamp(1.8rem, 3vw, 2.6rem)', letterSpacing: '-0.02em' }}>
+            Three AI minds. Zero mercy.
+          </h2>
+          <p style={{ fontSize: '16px', color: 'var(--text-secondary)', marginTop: '12px' }}>
+            Each persona has a distinct personality, speaking style, and strategy.
+          </p>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+          {[
+            { initial: 'R', name: 'Ravi', role: 'The Aggressor', color: '#E8402A', desc: 'Challenges every point. Uses data to dismantle weak arguments. Interrupts when he disagrees. High pressure, zero patience.', traits: ['Interrupts often', 'Data-driven attacks', 'Challenges assumptions'] },
+            { initial: 'S', name: 'Sneha', role: 'The Analyst', color: '#2DD4BF', desc: 'Methodical and precise. Cites studies and reports. Builds structured arguments point by point. Hard to counter without facts.', traits: ['Cites research', 'Structured reasoning', 'Fact-checks claims'] },
+            { initial: 'A', name: 'Arjun', role: 'The Diplomat', color: '#FBBF24', desc: 'Bridges gaps and summarises. Invites you to speak when you\'re silent. Collaborative but firm when needed.', traits: ['Bridges viewpoints', 'Encourages participation', 'Summarises fairly'] },
+          ].map(persona => (
+            <div key={persona.name} className="card reveal" style={{ borderTop: `3px solid ${persona.color}` }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '16px' }}>
+                <div style={{
+                  width: 48, height: 48, borderRadius: '50%',
+                  background: `${persona.color}20`, border: `2px solid ${persona.color}40`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '18px', color: persona.color,
+                }}>
+                  {persona.initial}
+                </div>
+                <div>
+                  <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '16px' }}>{persona.name}</div>
+                  <div style={{ fontSize: '12px', color: persona.color, fontWeight: 600 }}>{persona.role}</div>
+                </div>
+              </div>
+              <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: '20px' }}>
+                {persona.desc}
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {persona.traits.map(trait => (
+                  <div key={trait} style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ width: 4, height: 4, borderRadius: '50%', background: persona.color, flexShrink: 0 }} />
+                    {trait}
                   </div>
-                </button>
-              );
-            })}
-          </div>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
+      </section>
 
-      </div>
+      {/* ── FINAL CTA ── */}
+      <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '80px 48px 120px', position: 'relative', zIndex: 1 }}>
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(232,108,58,0.08) 0%, rgba(45,212,191,0.05) 100%)',
+          border: '1px solid var(--ember-border)', borderRadius: 'var(--r-xl)',
+          padding: '64px', textAlign: 'center',
+        }}>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 'clamp(1.8rem, 3vw, 2.8rem)', letterSpacing: '-0.02em', marginBottom: '16px' }}>
+            Your GD round is 3 weeks away.<br />
+            <span style={{ color: 'var(--ember)' }}>Are you ready?</span>
+          </h2>
+          <p style={{ fontSize: '16px', color: 'var(--text-secondary)', marginBottom: '32px' }}>
+            Join thousands of students practicing with MockTalk every day.
+          </p>
+          <button onClick={handleStart} disabled={isInitializing} className="btn-primary"
+            style={{ padding: '15px 36px', fontSize: '16px' }}>
+            {isInitializing ? 'Starting...' : 'Begin Your First Session →'}
+          </button>
+        </div>
+      </section>
+
+      {/* ── FOOTER ── */}
+      <footer style={{
+        borderTop: '1px solid var(--border)', padding: '28px 48px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        position: 'relative', zIndex: 1,
+      }}>
+        <span className="navbar-brand">Mock<span>Talk</span></span>
+        <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+          Built for placement warriors. Free forever.
+        </span>
+      </footer>
     </>
   );
 }

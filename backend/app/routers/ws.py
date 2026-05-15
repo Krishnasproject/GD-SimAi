@@ -136,6 +136,20 @@ async def gd_room_ws(websocket: WebSocket, session_id: str):
                     await websocket.close(code=1008)
                     break
 
+                # Rate-limit: max 3 concurrent in_progress sessions per user
+                uid = decoded.get("uid")
+                active = db.collection(COL_SESSIONS)\
+                    .where("userId", "==", uid)\
+                    .where("status", "==", "in_progress")\
+                    .limit(4).stream()
+                if len(list(active)) >= 3:
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": "Too many active sessions. Please end an existing session first.",
+                    })
+                    await websocket.close(code=4029, reason="Too many active sessions")
+                    return
+
                 # Build the initial state (the "blank game board")
                 # Seed topic from Firestore so both session creation and runtime agree on the same topic
                 firestore_topic = session_data.get("topic", "")

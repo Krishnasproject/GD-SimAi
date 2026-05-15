@@ -24,11 +24,13 @@
 from __future__ import annotations
 
 import asyncio
+import itertools
 import json
 import logging
 import random
 import re
 import time
+from threading import Lock
 from typing import AsyncGenerator
 
 import httpx
@@ -57,7 +59,38 @@ def _find_sentence_boundary(text: str) -> re.Match[str] | None:
     return None
 
 
+class GeminiKeyPool:
+    """Thread-safe round-robin key pool with per-key cooldown after 429 errors."""
+
+    COOLDOWN = 60.0
+
+    def __init__(self, keys: list[str]):
+        self._keys = [k for k in keys if k]
+        self._cycle = itertools.cycle(self._keys) if self._keys else iter([])
+        self._exhausted: dict[str, float] = {}
+        self._lock = Lock()
+
+    def get_key(self) -> str | None:
+        if not self._keys:
+            return None
+        with self._lock:
+            now = time.time()
+            for _ in range(len(self._keys)):
+                key = next(self._cycle)
+                exhausted_at = self._exhausted.get(key, 0)
+                if now - exhausted_at > self.COOLDOWN:
+                    return key
+            return None
+
+    def mark_exhausted(self, key: str):
+        with self._lock:
+            logger.warning(f"⚠️ Gemini Key **{key[-4:]} exhausted. Cooling down for {self.COOLDOWN}s.")
+            self._exhausted[key] = time.time()
+
+
 class KeyPool:
+    """Simple round-robin pool (used for Groq keys)."""
+
     def __init__(self, keys: list[str], name: str):
         self.name = name
         self.keys = [k for k in keys if k]
@@ -67,13 +100,12 @@ class KeyPool:
     def get_key(self) -> str | None:
         if not self.keys:
             return None
-        # Try finding a key that isn't functionally exhausted
         for _ in range(len(self.keys)):
             k = self.keys[self.idx]
             self.idx = (self.idx + 1) % len(self.keys)
             if time.monotonic() > self.exhausted_until_map[k]:
                 return k
-        # If all are exhausted, just return the next one and hope for the best
+        # All exhausted — return next anyway and hope for the best
         k = self.keys[self.idx]
         self.idx = (self.idx + 1) % len(self.keys)
         return k
@@ -95,8 +127,10 @@ class GeminiService:
         Configure the Gemini and Groq key pools.
         Called once at startup via dependency injection.
         """
-        # Load all available keys from config
-        self.gemini_pool = KeyPool(settings.get_gemini_keys(), "Gemini")
+        # Gemini: true round-robin with thread-safe lock + 60s cooldown
+        self._pool = GeminiKeyPool(settings.get_gemini_keys())
+        # Keep gemini_pool as alias for any external references
+        self.gemini_pool = self._pool
         self.groq_pool = KeyPool(settings.get_groq_keys(), "Groq")
 
         # Cancellation flag — set to True to abort a running stream
@@ -104,7 +138,7 @@ class GeminiService:
         self._llm_primary = settings.LLM_PRIMARY_PROVIDER
         self._groq_enabled = len(self.groq_pool.keys) > 0
 
-        logger.info(f"✅ GeminiService initialized (Gemini keys: {len(self.gemini_pool.keys)})")
+        logger.info(f"✅ GeminiService initialized (Gemini keys: {len(self._pool._keys)})")
         if self._groq_enabled:
             logger.info(f"✅ Groq fallback enabled (Groq keys: {len(self.groq_pool.keys)}, model: {settings.GROQ_LLM_MODEL})")
         else:
@@ -321,11 +355,11 @@ class GeminiService:
                 if groq_text: return groq_text
             logger.warning("Groq primary failed for generate(); falling back to Gemini")
 
-        # Fall back or main provider: Gemini REST API
-        for attempt in range(max(3, len(self.gemini_pool.keys))):
-            gemini_key = self.gemini_pool.get_key()
+        # Fall back or main provider: Gemini REST API (round-robin key pool)
+        for attempt in range(max(3, len(self._pool._keys)) or 3):
+            gemini_key = self._pool.get_key()
             if not gemini_key:
-                break
+                raise Exception("All Gemini keys exhausted")
 
             url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={gemini_key}"
             payload = {
@@ -340,15 +374,13 @@ class GeminiService:
                     response = await client.post(url, json=payload)
                 
                 if response.status_code == 429:
-                    self.gemini_pool.mark_exhausted(gemini_key)
+                    self._pool.mark_exhausted(gemini_key)
                     await self._backoff(attempt)
                     continue
                 
                 if response.status_code >= 400:
                     logger.error(f"Gemini generate API error ({response.status_code}): {response.text}")
-                    if attempt < len(self.gemini_pool.keys) - 1:
-                        continue
-                    break
+                    continue
 
                 data = response.json()
                 candidates = data.get("candidates", [])
@@ -357,7 +389,8 @@ class GeminiService:
                 
             except Exception as e:
                 logger.error(f"Gemini generate() error: {e}")
-                if self._is_retryable(e) and attempt < len(self.gemini_pool.keys) - 1:
+                if self._is_retryable(e):
+                    self._pool.mark_exhausted(gemini_key)
                     await self._backoff(attempt)
                     continue
                 break
@@ -399,10 +432,11 @@ class GeminiService:
             logger.warning("Groq primary failed for stream_generate(); falling back to Gemini")
 
         gemini_success = False
-        for attempt in range(max(3, len(self.gemini_pool.keys))):
+        for attempt in range(max(3, len(self._pool._keys)) or 3):
             buffer = ""
-            gemini_key = self.gemini_pool.get_key()
+            gemini_key = self._pool.get_key()
             if not gemini_key:
+                logger.error("All Gemini keys exhausted — falling back")
                 break
 
             url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?alt=sse&key={gemini_key}"
@@ -417,7 +451,7 @@ class GeminiService:
                 async with httpx.AsyncClient() as client:
                     async with client.stream("POST", url, json=payload, timeout=20.0) as response:
                         if response.status_code == 429:
-                            self.gemini_pool.mark_exhausted(gemini_key)
+                            self._pool.mark_exhausted(gemini_key)
                             await self._backoff(attempt)
                             continue
 

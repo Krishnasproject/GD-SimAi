@@ -28,9 +28,9 @@ const SPEAKER_LABELS: Record<Speaker, string> = {
 
 
 const AI_PERSONAS = [
-  { id: 'aggressor', name: 'Ravi', role: 'Aggressor', initial: 'R', color: '#e05a6b' },
-  { id: 'logical', name: 'Sneha', role: 'Logical', initial: 'S', color: '#1e9b8a' },
-  { id: 'diplomat', name: 'Arjun', role: 'Diplomat', initial: 'A', color: '#c9a84c' },
+  { id: 'aggressor', name: 'Ravi', role: 'Aggressor', initial: 'R', color: '#E8402A' },
+  { id: 'logical', name: 'Sneha', role: 'Logical', initial: 'S', color: 'var(--teal)' },
+  { id: 'diplomat', name: 'Arjun', role: 'Diplomat', initial: 'A', color: 'var(--gold)' },
 ];
 
 export default function Room() {
@@ -298,10 +298,10 @@ export default function Room() {
       <div style={{ width: '280px', height: '100%', background: 'var(--bg-surface)', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
         <div style={{ padding: '24px', borderBottom: '1px solid var(--border)' }}>
           <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '20px', color: 'white' }}>
-            Mock<span style={{ color: 'var(--accent-teal)' }}>Talk</span>
+            Mock<span style={{ color: 'var(--ember)' }}>Talk</span>
           </span>
           {targetCompany && (
-            <div style={{ marginTop: '8px', fontSize: '11px', display: 'inline-block', padding: '3px 10px', background: 'var(--accent-gold-dim)', color: 'var(--accent-gold)', borderRadius: '20px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            <div style={{ marginTop: '8px', fontSize: '11px', display: 'inline-block', padding: '3px 10px', background: 'var(--gold-dim)', color: 'var(--gold)', borderRadius: '20px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
               {targetCompany}
             </div>
           )}
@@ -355,7 +355,7 @@ export default function Room() {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
         {topic && (
           <div style={{ padding: '20px 32px', background: 'var(--bg-surface)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center' }}>
-            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--accent-teal)', textTransform: 'uppercase', letterSpacing: '0.1em', marginRight: '16px' }}>Discussion Topic</span>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--ember)', textTransform: 'uppercase', letterSpacing: '0.1em', marginRight: '16px' }}>Discussion Topic</span>
             <span style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>{topic}</span>
           </div>
         )}
@@ -389,19 +389,19 @@ export default function Room() {
                   </div>
                 )}
                 {isUser && (
-                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#a78bfa', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '14px', color: 'white', flexShrink: 0, marginTop: '24px' }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--ember)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '14px', color: 'white', flexShrink: 0, marginTop: '24px' }}>
                     U
                   </div>
                 )}
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: isUser ? 'flex-end' : 'flex-start' }}>
-                  <div style={{ fontSize: '12px', fontWeight: 600, color: isUser ? '#a78bfa' : speakerConfig?.color, textTransform: 'uppercase', letterSpacing: '0.05em', padding: '0 4px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: isUser ? 'var(--ember)' : speakerConfig?.color, textTransform: 'uppercase', letterSpacing: '0.05em', padding: '0 4px' }}>
                     {SPEAKER_LABELS[entry.speaker]}
                   </div>
                   <div style={{
                     padding: '14px 18px', borderRadius: '16px', fontSize: '15px', lineHeight: 1.6,
-                    background: isUser ? 'rgba(167,139,250,0.12)' : 'var(--bg-card)',
-                    border: `1px solid ${isUser ? 'rgba(167,139,250,0.25)' : 'var(--border)'}`,
+                    background: isUser ? 'var(--ember-dim)' : 'var(--bg-card)',
+                    border: `1px solid ${isUser ? 'var(--ember-border)' : 'var(--border)'}`,
                     color: 'var(--text-primary)',
                     borderTopLeftRadius: !isUser ? '4px' : '16px',
                     borderTopRightRadius: isUser ? '4px' : '16px',
@@ -430,7 +430,7 @@ export default function Room() {
                 </div>
                 <div style={{ padding: '14px 18px', borderRadius: '16px', fontSize: '15px', lineHeight: 1.6, background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-primary)', borderTopLeftRadius: '4px' }}>
                   {streamingText}
-                  <span style={{ display: 'inline-block', width: '6px', height: '14px', background: 'var(--accent-teal)', marginLeft: '6px', borderRadius: '1px', animation: 'pulse-dot 1s ease-in-out infinite', verticalAlign: 'middle' }} />
+                  <span style={{ display: 'inline-block', width: '6px', height: '14px', background: 'var(--ember)', marginLeft: '6px', borderRadius: '1px', animation: 'pulse-dot 1s ease-in-out infinite', verticalAlign: 'middle' }} />
                 </div>
               </div>
             </div>
@@ -452,8 +452,8 @@ export default function Room() {
 
         {/* Status */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: 'var(--bg-card)', borderRadius: '20px', border: '1px solid var(--border)', marginBottom: 'auto' }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: isConnected ? 'var(--accent-teal)' : '#666', animation: isConnected ? 'pulse-dot 1.8s ease-in-out infinite' : 'none' }} />
-          <span style={{ fontSize: '12px', fontWeight: 600, color: isConnected ? 'var(--accent-teal)' : 'var(--text-muted)' }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: isConnected ? 'var(--ember)' : '#666', animation: isConnected ? 'pulse-dot 1.8s ease-in-out infinite' : 'none' }} />
+          <span style={{ fontSize: '12px', fontWeight: 600, color: isConnected ? 'var(--ember)' : 'var(--text-muted)' }}>
             {isConnected ? 'Connected' : 'Connecting'}
           </span>
         </div>
@@ -464,13 +464,13 @@ export default function Room() {
             onClick={toggleMic}
             style={{
               width: '72px', height: '72px', borderRadius: '50%',
-              border: `2px solid ${micActive ? 'var(--accent-teal)' : 'var(--border)'}`,
+              border: `2px solid ${micActive ? 'var(--ember)' : 'var(--border)'}`,
               cursor: 'pointer',
               background: micActive 
-                ? userSpeaking ? '#e05a6b' : 'var(--accent-teal)'
+                ? userSpeaking ? 'var(--rose)' : 'var(--ember)'
                 : 'var(--bg-card)',
               fontSize: '28px',
-              boxShadow: micActive ? '0 0 30px rgba(30,155,138,0.4)' : 'none',
+              boxShadow: micActive ? '0 0 30px var(--ember-dim)' : 'none',
               transition: 'all 0.2s',
               display: 'flex', alignItems: 'center', justifyContent: 'center'
             }}
@@ -480,7 +480,7 @@ export default function Room() {
           
           <div style={{ textAlign: 'center', height: '40px' }}>
             {micActive ? (
-              <div style={{ fontSize: '12px', fontWeight: 600, color: userSpeaking ? 'var(--accent-rose)' : 'var(--accent-teal)' }}>
+              <div style={{ fontSize: '12px', fontWeight: 600, color: userSpeaking ? 'var(--rose)' : 'var(--ember)' }}>
                 {userSpeaking ? 'Listening...' : 'Mic Active'}
               </div>
             ) : roomState === 'user_turn' ? (

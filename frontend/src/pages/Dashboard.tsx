@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Activity, Clock, Target, Plus, Play, BarChart3 } from 'lucide-react';
 import { useAuth } from '../auth/useAuth';
 import { apiUrl } from '../config/api';
+import { useScrollReveal } from '../hooks/useScrollReveal';
 
 type SessionItem = {
   sessionId: string;
@@ -14,6 +13,7 @@ type SessionItem = {
 };
 
 export default function Dashboard() {
+  useScrollReveal();
   const { user } = useAuth();
   const [sessions, setSessions] = useState<SessionItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,135 +39,99 @@ export default function Dashboard() {
     loadSessions();
   }, [user]);
 
-  const stats = [
-    { label: 'Total Sessions', value: sessions.length.toString(), icon: Activity },
-    { label: 'Avg Latency', value: '< 980ms', icon: Clock },
-    { label: 'Completion Rate', value: '84%', icon: Target },
-  ];
-
   return (
-    <div className="space-y-10 max-w-6xl mx-auto py-8 px-4">
-      <section className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-        <div className="space-y-1">
-          <motion.h2
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-3xl font-bold tracking-tight text-white"
-          >
-            Dashboard
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.1 }}
-            className="text-[#A0A0A5] text-sm font-medium"
-          >
-            Welcome back. Ready for your next session?
-          </motion.p>
+    <div className="reveal" style={{ maxWidth: '1100px', margin: '0 auto', padding: '48px 32px', position: 'relative', zIndex: 1 }}>
+      
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '40px' }}>
+        <div>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '28px', letterSpacing: '-0.02em', marginBottom: '4px' }}>
+            Your Sessions
+          </h1>
+          <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
+            Track your GD progress over time
+          </p>
         </div>
-        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-          <Link to="/" className="btn-primary inline-flex items-center gap-2">
-            <Plus className="w-4 h-4" />
-            New Simulation
-          </Link>
-        </motion.div>
-      </section>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        {stats.map((stat, idx) => {
-          const Icon = stat.icon;
-          return (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 + idx * 0.1 }}
-              className="glass-card p-6 rounded-xl flex items-center gap-5"
-            >
-              <div className="p-3.5 bg-[#121216] rounded-lg border border-[#333333]">
-                <Icon className="w-6 h-6 text-[#2A9D8F]" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-sm font-medium text-[#888890] tracking-wide uppercase">{stat.label}</span>
-                <span className="text-2xl font-bold text-white tabular-nums">{loading ? '-' : stat.value}</span>
-              </div>
-            </motion.div>
-          );
-        })}
+        <Link to="/" className="btn-primary">+ New Session</Link>
       </div>
 
-      <div>
-        <div className="flex items-center gap-2 mb-4">
-          <Activity className="w-5 h-5 text-[#888890]" />
-          <h3 className="text-lg font-semibold text-white">Recent Sessions</h3>
-        </div>
-        {loading && <p className="text-[#A0A0A5] animate-pulse">Loading sessions...</p>}
-        {error && (
-          <p className="rounded-lg border border-red-900/50 bg-red-900/20 px-4 py-3 text-red-200">{error}</p>
-        )}
-        {!loading && !error && sessions.length === 0 && (
-          <div className="glass-card p-10 text-center rounded-xl flex flex-col items-center gap-4">
-            <div className="p-4 bg-[#121216] border border-[#333333] rounded-full">
-              <Target className="w-8 h-8 text-[#A0A0A5]" />
+      {/* Stats row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '40px' }}>
+        {[
+          { label: 'Total Sessions', value: loading ? '—' : sessions.length },
+          { label: 'This Week', value: '—' },
+          { label: 'Best Score', value: '—' },
+        ].map(stat => (
+          <div key={stat.label} className="card" style={{ padding: '20px 24px' }}>
+            <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>
+              {stat.label}
             </div>
-            <div className="space-y-1">
-              <p className="text-white font-medium text-lg">No sessions yet</p>
-              <p className="text-[#888890] max-w-sm mx-auto">
-                Click "New Simulation" to start your first GD practice session.
-              </p>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '28px', color: 'var(--text-primary)' }}>
+              {stat.value}
             </div>
           </div>
-        )}
-        <div className="grid grid-cols-1 gap-3">
-          {sessions.map((session, idx) => (
-            <motion.div
-              key={session.sessionId}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 + idx * 0.05 }}
-              className="glass-card p-5 rounded-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 group hover:border-[#4A4A52]"
-            >
-              <div className="space-y-2">
-                <p className="text-white font-semibold text-lg tracking-tight group-hover:text-[#2A9D8F] transition-colors">
-                  {session.topic}
-                </p>
-                <div className="flex flex-wrap items-center gap-3 text-sm text-[#888890] font-medium">
-                  <span className="flex items-center gap-1.5">
-                    <Target className="w-3.5 h-3.5" /> {session.targetCompany}
-                  </span>
-                  <span className="text-[#333333]">|</span>
-                  <span className="badge-teal">{session.status}</span>
-                  {session.createdAt && (
-                    <>
-                      <span className="text-[#333333]">|</span>
-                      <span>{new Date(session.createdAt).toLocaleDateString('en-US', {
-                        day: 'numeric', month: 'short', year: 'numeric'
-                      })}</span>
-                    </>
-                  )}
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-3">
-                <Link
-                  to={`/room/${session.sessionId}`}
-                  state={{ sessionId: session.sessionId, topic: session.topic, targetCompany: session.targetCompany }}
-                  className="btn-secondary flex items-center gap-2"
-                >
-                  <Play className="w-4 h-4" />
-                  Enter Room
-                </Link>
-                <Link
-                  to={`/analytics/${session.sessionId}`}
-                  state={{ sessionId: session.sessionId }}
-                  className="btn-primary flex items-center gap-2"
-                >
-                  <BarChart3 className="w-4 h-4" />
-                  Analytics
-                </Link>
-              </div>
-            </motion.div>
-          ))}
+        ))}
+      </div>
+
+      {/* Sessions list */}
+      {loading && <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Loading sessions...</p>}
+      {error && <p style={{ color: 'var(--rose)', fontSize: '14px' }}>{error}</p>}
+
+      {!loading && sessions.length === 0 && (
+        <div className="card" style={{ textAlign: 'center', padding: '64px', borderStyle: 'dashed' }}>
+          <div style={{ fontSize: '32px', marginBottom: '16px' }}>🎯</div>
+          <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '18px', marginBottom: '8px' }}>
+            No sessions yet
+          </h3>
+          <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '24px' }}>
+            Start your first GD practice session now
+          </p>
+          <Link to="/" className="btn-primary">Start practicing →</Link>
         </div>
+      )}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        {sessions.map(session => (
+          <div key={session.sessionId} className="card" style={{
+            display: 'flex', alignItems: 'center',
+            justifyContent: 'space-between', padding: '20px 24px',
+            transition: 'border-color 0.2s', cursor: 'default',
+          }}
+            onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--border-light)')}
+            onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+          >
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: '15px', marginBottom: '6px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {session.topic}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span className="badge badge-ember" style={{ fontSize: '10px' }}>{session.targetCompany}</span>
+                <span className="badge badge-neutral" style={{ fontSize: '10px' }}>{session.status}</span>
+                {session.createdAt && (
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                    {new Date(session.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </span>
+                )}
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '10px', marginLeft: '24px' }}>
+              <Link
+                to={`/analytics/${session.sessionId}`}
+                state={{ sessionId: session.sessionId }}
+                className="btn-secondary" style={{ fontSize: '13px', padding: '8px 16px' }}
+              >
+                Analytics
+              </Link>
+              <Link
+                to={`/room/${session.sessionId}`}
+                state={{ sessionId: session.sessionId, topic: session.topic, targetCompany: session.targetCompany }}
+                className="btn-primary" style={{ fontSize: '13px', padding: '8px 16px' }}
+              >
+                Rejoin
+              </Link>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

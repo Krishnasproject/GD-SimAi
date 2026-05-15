@@ -65,6 +65,8 @@ class Settings(BaseSettings):
 
     # ── CORS (frontend URL) ───────────────────────────────────────────────────
     FRONTEND_URL: str = "http://localhost:5173" # Vite dev server
+    # Comma-separated list of allowed origins for production (overrides FRONTEND_URL)
+    ALLOWED_ORIGINS: str = ""
 
     # pydantic-settings reads from .env automatically
     model_config = SettingsConfigDict(
@@ -88,6 +90,25 @@ class Settings(BaseSettings):
         if self.GROQ_API_KEYS:
             keys.extend([k.strip() for k in self.GROQ_API_KEYS.split(",") if k.strip()])
         return list(dict.fromkeys(keys)) # Remove duplicates
+
+    def get_allowed_origins(self) -> list[str]:
+        """Return the list of allowed CORS origins.
+
+        Production: set ALLOWED_ORIGINS=https://myapp.vercel.app,https://custom.domain
+        Local dev:  leave empty — auto-expands FRONTEND_URL to include 127.0.0.1 variant.
+        """
+        if self.ALLOWED_ORIGINS:
+            return [o.strip() for o in self.ALLOWED_ORIGINS.split(",") if o.strip()]
+        return _build_allowed_origins(self.FRONTEND_URL)
+
+
+def _build_allowed_origins(frontend_url: str) -> list[str]:
+    origins = {frontend_url}
+    if "localhost" in frontend_url:
+        origins.add(frontend_url.replace("localhost", "127.0.0.1"))
+    if "127.0.0.1" in frontend_url:
+        origins.add(frontend_url.replace("127.0.0.1", "localhost"))
+    return sorted(origins)
 
 
 # Single instance imported everywhere — don't create multiple Settings()
